@@ -11,10 +11,10 @@ const { asyncWrapper } = require("./asyncWrapper.js");
 const dotenv = require("dotenv");
 dotenv.config();
 const app = express();
+const userModel = require("./Models/userModel.js");
+const axios = require("axios");
 
-const {
-  PokemonAuthError,
-} = require("./errors.js");
+const { PokemonAuthError } = require("./errors.js");
 
 var pokeModel = null;
 
@@ -54,14 +54,38 @@ const authUser = asyncWrapper(async (req, res, next) => {
     const invalid_tokens = await tokensModel.findOne({
       username: req.query.user_id,
     });
+
+    const user = await userModel.findOne({
+      username: req.query.user_id,
+    });
+
     if (invalid_tokens["invalid_tokens"].includes(token)) {
       throw new PokemonAuthError("Invalid Token Verification. Log in again.");
     }
+
     try {
       const verified = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       next();
     } catch (err) {
-      throw new PokemonAuthError("Invalid Token Verification. Log in again.");
+      if (user.issued_tokens.includes(token)) {
+        axios
+          .post(
+            `http://127.0.0.1:5040/requestNewAccessToken?username=${user.username}`,
+            {},
+            {
+              headers: {
+                Authorization: `Refresh ${user.refresh_token}`,
+              },
+            }
+          )
+          .catch((error) => {
+            console.error(error);
+          });
+
+        next();
+      } else {
+        throw new PokemonAuthError("Invalid Token Verification. Log in again.");
+      }
     }
   } else {
     res.json({
@@ -106,7 +130,6 @@ app.get(
   asyncWrapper(async (req, res) => {
     const { id } = req.query;
     const docs = await pokeModel.find({ id: id });
-    console.log(docs);
     if (docs.length != 0) res.json(docs);
     else res.json({ errMsg: "Pokemon not found" });
   })
@@ -115,7 +138,6 @@ app.get(
 app.use(authAdmin);
 
 app.get("/report", (req, res) => {
-  console.log("Report requested");
   res.send(`Table ${req.query.id}`);
 });
 
