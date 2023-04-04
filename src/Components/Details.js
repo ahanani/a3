@@ -24,7 +24,6 @@ function Details({ user }) {
         },
       });
       const poke = response.data;
-      console.log(poke);
       setPokemon(poke);
     };
     fetchPokemon();

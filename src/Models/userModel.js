@@ -34,6 +34,11 @@ const schema = new mongoose.Schema({
     default: "user",
     enum: ["user", "admin"],
   },
+  active: {
+    type: Boolean,
+    required: true,
+    default: null,
+  },
   token_invalid: {
     type: Boolean,
     required: true,
