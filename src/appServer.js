@@ -1,21 +1,18 @@
 const mongoose = require("mongoose");
 const express = require("express");
-const { connectDB } = require("./connectDB.js");
-const { populatePokemons } = require("./populatePokemons.js");
-const { getTypes } = require("./getTypes.js");
+const { connectDB } = require("./Models/connectDB.js");
+const { populatePokemons } = require("./Models/populatePokemons.js");
+const { getTypes } = require("./Models/getTypes.js");
 const { handleErr } = require("./errorHandler.js");
 const morgan = require("morgan");
 const cors = require("cors");
-const tokensModel = require("./tokensModel.js");
+const tokensModel = require("./Models/tokenModel.js");
 const { asyncWrapper } = require("./asyncWrapper.js");
 const dotenv = require("dotenv");
 dotenv.config();
 const app = express();
 
 const {
-  PokemonBadRequestMissingID,
-  PokemonNotFoundError,
-  PokemonDuplicateError,
   PokemonAuthError,
 } = require("./errors.js");
 
@@ -24,7 +21,7 @@ var pokeModel = null;
 const start = asyncWrapper(async () => {
   await connectDB({ drop: false });
   const pokeSchema = await getTypes();
-  pokeModel = await populatePokemons(pokeSchema);
+  // pokeModel = await populatePokemons(pokeSchema);
   pokeModel = mongoose.model("pokemons", pokeSchema);
 
   app.listen(process.env.pokeServerPORT, (err) => {
@@ -38,7 +35,6 @@ const start = asyncWrapper(async () => {
 start();
 app.use(express.json());
 const jwt = require("jsonwebtoken");
-const userModel = require("./userModel.js");
 
 app.use(morgan(":method"));
 
@@ -98,15 +94,9 @@ const authAdmin = asyncWrapper(async (req, res, next) => {
 app.use(authUser);
 
 app.get(
-  "/api/v1/pokemons",
+  "/api/v1/allPokemons",
   asyncWrapper(async (req, res) => {
-    if (!req.query["count"]) req.query["count"] = 10;
-    if (!req.query["after"]) req.query["after"] = 0;
-    const docs = await pokeModel
-      .find({})
-      .sort({ id: 1 })
-      .skip(req.query["after"])
-      .limit(req.query["count"]);
+    const docs = await pokeModel.find({});
     res.json(docs);
   })
 );
@@ -116,81 +106,13 @@ app.get(
   asyncWrapper(async (req, res) => {
     const { id } = req.query;
     const docs = await pokeModel.find({ id: id });
+    console.log(docs);
     if (docs.length != 0) res.json(docs);
     else res.json({ errMsg: "Pokemon not found" });
   })
 );
 
 app.use(authAdmin);
-
-app.post(
-  "/api/v1/pokemon/",
-  asyncWrapper(async (req, res) => {
-    console.log(req.body);
-    if (!req.body.id) throw new PokemonBadRequestMissingID();
-    const poke = await pokeModel.find({ id: req.body.id });
-    if (poke.length != 0) throw new PokemonDuplicateError();
-    const pokeDoc = await pokeModel.create(req.body);
-    res.json({
-      msg: "Added Successfully",
-    });
-  })
-);
-
-app.delete(
-  "/api/v1/pokemon",
-  asyncWrapper(async (req, res) => {
-    const docs = await pokeModel.findOneAndRemove({ id: req.query.id });
-    if (docs)
-      res.json({
-        msg: "Deleted Successfully",
-      });
-    else throw new PokemonNotFoundError("");
-  })
-);
-
-app.put(
-  "/api/v1/pokemon/:id",
-  asyncWrapper(async (req, res) => {
-    const selection = { id: req.params.id };
-    const update = req.body;
-    const options = {
-      new: true,
-      runValidators: true,
-      overwrite: true,
-    };
-    const doc = await pokeModel.findOneAndUpdate(selection, update, options);
-    if (doc) {
-      res.json({
-        msg: "Updated Successfully",
-        pokeInfo: doc,
-      });
-    } else {
-      throw new PokemonNotFoundError("");
-    }
-  })
-);
-
-app.patch(
-  "/api/v1/pokemon/:id",
-  asyncWrapper(async (req, res) => {
-    const selection = { id: req.params.id };
-    const update = req.body;
-    const options = {
-      new: true,
-      runValidators: true,
-    };
-    const doc = await pokeModel.findOneAndUpdate(selection, update, options);
-    if (doc) {
-      res.json({
-        msg: "Updated Successfully",
-        pokeInfo: doc,
-      });
-    } else {
-      throw new PokemonNotFoundError("");
-    }
-  })
-);
 
 app.get("/report", (req, res) => {
   console.log("Report requested");

@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 
 function Pokemon({ pokemon }) {
   const getThreeDigitId = (id) => {
@@ -10,7 +10,7 @@ function Pokemon({ pokemon }) {
 
   return (
     <>
-      <Link to={"./details/" + pokemon.id}>
+      <Link to={"/details/" + pokemon.id}>
         <img
           id={pokemon.id}
           alt={pokemon.name.english}
@@ -19,6 +19,7 @@ function Pokemon({ pokemon }) {
           )}.png`}
         />
       </Link>
+      <Outlet />
     </>
   );
 }

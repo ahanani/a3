@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-function Search( {selectedTypes, setSelectedTypes} ) {
+function Search({ selectedTypes, setSelectedTypes }) {
   const [types, setTypes] = useState([]);
 
   useEffect(() => {
@@ -18,17 +18,22 @@ function Search( {selectedTypes, setSelectedTypes} ) {
   const handleChange = (e) => {
     const { value, checked } = e.target;
     if (checked) {
-        setSelectedTypes([...selectedTypes, value]);
+      setSelectedTypes([...selectedTypes, value]);
     } else {
-        setSelectedTypes(selectedTypes.filter(type => type !== value));
+      setSelectedTypes(selectedTypes.filter((type) => type !== value));
     }
-  }
+  };
 
   return (
     <div>
       {types.map((type) => (
         <div key={type}>
-          <input type="checkbox" value={type} id={type} onChange={handleChange} />
+          <input
+            type="checkbox"
+            value={type}
+            id={type}
+            onChange={handleChange}
+          />
           <label htmlFor={type}>{type}</label>
         </div>
       ))}

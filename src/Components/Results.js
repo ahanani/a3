@@ -3,7 +3,7 @@ import Page from "./Page";
 import Pagination from "./Pagination";
 import axios from "axios";
 
-function Results({ selectedTypes }) {
+function Results({ selectedTypes, user }) {
   const [pokemons, setPokemons] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pokemonsPerPage] = useState(10);
@@ -16,7 +16,15 @@ function Results({ selectedTypes }) {
   useEffect(() => {
     async function fetchData() {
       const response = await axios.get(
-        "https://raw.githubusercontent.com/fanzeyi/pokemon.json/master/pokedex.json"
+        "http://127.0.0.1:5050/api/v1/allPokemons",
+        {
+          headers: {
+            Authorization: `Bearer ${user.access_token}`,
+          },
+          params: {
+            user_id: user.username
+          },
+        }
       );
       const pokemons = response.data.filter((pokemon) =>
         selectedTypes.every((type) => pokemon.type.includes(type))

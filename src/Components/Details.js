@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
-function Details() {
+function Details({ user }) {
   const { id } = useParams();
   const [pokemon, setPokemon] = useState([]);
 
@@ -14,14 +14,21 @@ function Details() {
 
   useEffect(() => {
     const fetchPokemon = async () => {
-      const response = await axios.get(
-        "https://raw.githubusercontent.com/fanzeyi/pokemon.json/master/pokedex.json"
-      );
-      const poke = response.data.filter((p) => p.id == id);
+      const response = await axios.get("http://127.0.0.1:5050/api/v1/pokemon", {
+        headers: {
+          Authorization: `Bearer ${user.access_token}`,
+        },
+        params: {
+          user_id: user.username,
+          id: id,
+        },
+      });
+      const poke = response.data;
+      console.log(poke);
       setPokemon(poke);
     };
     fetchPokemon();
-  }, [pokemon]);
+  }, []);
 
   return (
     <>
@@ -37,12 +44,14 @@ function Details() {
           </p>
           <p>HP: {pokemon[0].base.HP}</p>
           <p>Attack: {pokemon[0].base.Attack}</p>
-          <p>Sp. Attack: {pokemon[0].base["Sp. Attack"]}</p>
-          <p>Sp. Defense: {pokemon[0].base["Sp. Defense"]}</p>
+          <p>Sp. Attack: {pokemon[0].base["Speed Attack"]}</p>
+          <p>Sp. Defense: {pokemon[0].base["Speed Defense"]}</p>
           <p>Speed: {pokemon[0].base.Speed}</p>
           <img
             alt={pokemon[0].name.english}
-            src={`https://github.com/fanzeyi/pokemon.json/raw/master/images/${getThreeDigitId(id)}.png`}
+            src={`https://github.com/fanzeyi/pokemon.json/raw/master/images/${getThreeDigitId(
+              id
+            )}.png`}
           />
         </div>
       ) : (
