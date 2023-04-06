@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { BarChart, Bar, Cell } from "recharts";
 import { Route, Routes, Navigate } from "react-router-dom";
+import Logout from "./Logout";
 
 function AdminDashboard({ user }) {
   const [report, setReport] = useState();
@@ -103,6 +104,7 @@ function AdminDashboard({ user }) {
               <p>Loading label...</p>
             )}
           </div>
+          <Logout user={user} />
         </div>
       ) : (
         <p>Loading report...</p>

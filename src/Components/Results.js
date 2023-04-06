@@ -3,6 +3,7 @@ import Page from "./Page";
 import Pagination from "./Pagination";
 import axios from "axios";
 import { Route, Routes, Navigate } from "react-router-dom";
+import Logout from "./Logout";
 
 function Results({ selectedTypes, user }) {
   const [pokemons, setPokemons] = useState([]);
@@ -48,6 +49,7 @@ function Results({ selectedTypes, user }) {
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
       />
+      <Logout user={user} />
     </div>
   );
 }
