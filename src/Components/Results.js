@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Page from "./Page";
 import Pagination from "./Pagination";
 import axios from "axios";
+import { Route, Routes, Navigate } from "react-router-dom";
 
 function Results({ selectedTypes, user }) {
   const [pokemons, setPokemons] = useState([]);
@@ -31,11 +32,16 @@ function Results({ selectedTypes, user }) {
       );
       setPokemons(pokemons);
     }
-    fetchData();
+    if (user) fetchData();
   }, [selectedTypes]);
 
   return (
     <div>
+      {!user && (
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" />} />
+        </Routes>
+      )}
       <Page currentPokemons={currentPokemons} currentPage={currentPage} />
       <Pagination
         numberOfPages={numberOfPages}

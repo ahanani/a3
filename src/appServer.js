@@ -10,8 +10,9 @@ const tokensModel = require("./Models/tokenModel.js");
 const { asyncWrapper } = require("./asyncWrapper.js");
 const dotenv = require("dotenv");
 dotenv.config();
-const app = express();
+const appServer = express();
 const userModel = require("./Models/userModel.js");
+const reportsModel = require("./Models/reports.js");
 const axios = require("axios");
 
 const { PokemonAuthError } = require("./errors.js");
@@ -24,7 +25,7 @@ const start = asyncWrapper(async () => {
   // pokeModel = await populatePokemons(pokeSchema);
   pokeModel = mongoose.model("pokemons", pokeSchema);
 
-  app.listen(process.env.pokeServerPORT, (err) => {
+  appServer.listen(process.env.pokeServerPORT, (err) => {
     if (err) throw new PokemonDbError(err);
     else
       console.log(
@@ -33,14 +34,26 @@ const start = asyncWrapper(async () => {
   });
 });
 start();
-app.use(express.json());
+appServer.use(express.json());
 const jwt = require("jsonwebtoken");
 
-app.use(morgan(":method"));
+appServer.use(morgan(":method"));
 
-app.use(cors());
+appServer.use(cors());
 
 const authUser = asyncWrapper(async (req, res, next) => {
+  var date = new Date();
+  const today =
+    date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+  const db_date = await reportsModel.findOne({
+    $and: [{ date: today }, { user: req.query.user_id }],
+  });
+  if (!db_date) {
+    reportsModel.create({
+      date: today,
+      user: req.query.user_id,
+    });
+  }
   const header_info = req.header("Authorization").split(" ");
   if (header_info[0] === "Bearer") {
     const token = header_info[1];
@@ -115,32 +128,64 @@ const authAdmin = asyncWrapper(async (req, res, next) => {
   }
 });
 
-app.use(authUser);
+appServer.use(authUser);
 
-app.get(
+appServer.get(
   "/api/v1/allPokemons",
   asyncWrapper(async (req, res) => {
+    var date = new Date();
+    const today =
+      date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+    await reportsModel.findOneAndUpdate(
+      {
+        $and: [{ date: today }, { user: req.query.user_id }],
+      },
+      {
+        $inc: {
+          all_pokemons_visit: 1,
+          total: 1,
+        },
+      }
+    );
     const docs = await pokeModel.find({});
     res.json(docs);
   })
 );
 
-app.get(
+appServer.get(
   "/api/v1/pokemon",
   asyncWrapper(async (req, res) => {
+    var date = new Date();
+    const today =
+      date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
     const { id } = req.query;
+     await reportsModel.findOneAndUpdate(
+       {
+         $and: [{ date: today }, { user: req.query.user_id }],
+       },
+       {
+         $inc: {
+           pokemon_details_visit: 1,
+           total: 1,
+         },
+       }
+     );
     const docs = await pokeModel.find({ id: id });
     if (docs.length != 0) res.json(docs);
     else res.json({ errMsg: "Pokemon not found" });
   })
 );
 
-app.use(authAdmin);
+appServer.use(authAdmin);
 
-app.get("/report", (req, res) => {
-  res.send(`Table ${req.query.id}`);
+appServer.get("/report", async (req, res) => {
+  var date = new Date();
+  const today =
+    date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+  const reports = await reportsModel.find({ date: today});
+  res.json(reports);
 });
 
-app.use(handleErr);
+appServer.use(handleErr);
 
-module.exports = app;
+module.exports = appServer;

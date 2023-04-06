@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const express = require("express");
 const { asyncWrapper } = require("./asyncWrapper.js");
 require("dotenv").config();
@@ -8,25 +9,24 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 
 const {
-  PokemonBadRequest,
   PokemonDbError,
   PokemonAuthError,
 } = require("./errors.js");
 
-const app = express();
-app.use(express.json());
-app.use(
+const authServer = express();
+authServer.use(express.json());
+authServer.use(
   cors({
     exposedHeaders: ["Authorization"],
   })
 );
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+authServer.use(bodyParser.json());
+authServer.use(bodyParser.urlencoded({ extended: true }));
 
 const start = asyncWrapper(async () => {
   await connectDB({ drop: false });
 
-  app.listen(process.env.authServerPORT, async (err) => {
+  authServer.listen(process.env.authServerPORT, async (err) => {
     if (err) throw new PokemonDbError(err);
     else
       console.log(
@@ -53,7 +53,7 @@ start();
 
 const bcrypt = require("bcrypt");
 
-app.post(
+authServer.post(
   "/register",
   asyncWrapper(async (req, res) => {
     const { username, password, email } = req.body;
@@ -71,7 +71,7 @@ const jwt = require("jsonwebtoken");
 
 let issued_tokens = [];
 
-app.post(
+authServer.post(
   "/requestNewAccessToken",
   asyncWrapper(async (req, res) => {
     const header_info = req.header("Authorization").split(" ");
@@ -124,7 +124,7 @@ app.post(
   })
 );
 
-app.post(
+authServer.post(
   "/login",
   asyncWrapper(async (req, res) => {
     const { username, password } = req.body;
@@ -169,7 +169,7 @@ app.post(
   })
 );
 
-app.get(
+authServer.get(
   "/logout",
   asyncWrapper(async (req, res) => {
     const req_info = req.query.appid.split(" ");
@@ -219,4 +219,4 @@ app.get(
   })
 );
 
-module.exports = app;
+module.exports = authServer;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 
 function Details({ user }) {
   const { id } = useParams();
@@ -26,11 +27,16 @@ function Details({ user }) {
       const poke = response.data;
       setPokemon(poke);
     };
-    fetchPokemon();
+    if (user) fetchPokemon();
   }, []);
 
   return (
     <>
+      {!user && (
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" />} />
+        </Routes>
+      )}
       {pokemon.length > 0 ? (
         <div>
           <p>ID: {pokemon[0].id}</p>
