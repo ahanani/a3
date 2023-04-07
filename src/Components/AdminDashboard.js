@@ -10,24 +10,62 @@ function AdminDashboard({ user }) {
   const [activeItemDetails, setActiveItemDetails] = useState({});
   const [activeIndexAll, setActiveIndexAll] = useState(0);
   const [activeItemAll, setActiveItemAll] = useState({});
+  const [userDash, setUserDash] = useState(null);
+
+  useEffect(() => {
+    if (!user) {
+      const getUser = async () => {
+        console.log("this happens");
+        try {
+          const res = await axios.get("http://127.0.0.1:5040/user", {
+            params: {
+              id: localStorage.getItem("user"),
+            },
+          });
+          console.log(res.data);
+          setUserDash(res.data);
+        } catch (err) {
+          console.log(err);
+        }
+      };
+      getUser();
+    } else {
+      setUserDash(user);
+    }
+  }, [user]);
 
   useEffect(() => {
     const fetchReport = async () => {
-      const response = await axios.get("http://127.0.0.1:5050/report", {
-        headers: {
-          Authorization: `Bearer ${user.access_token}`,
-        },
-        params: {
-          user_id: user.username,
-        },
-      });
-      const report = response.data;
-      setReport(report);
-      setActiveItemDetails(report[activeIndexDetails]);
-      setActiveItemAll(report[activeIndexAll]);
+      if (user) {
+        const response = await axios.get("http://127.0.0.1:5050/report", {
+          headers: {
+            Authorization: `Bearer ${user.access_token}`,
+          },
+          params: {
+            user_id: user.username,
+          },
+        });
+        const report = response.data;
+        setReport(report);
+        setActiveItemDetails(report[activeIndexDetails]);
+        setActiveItemAll(report[activeIndexAll]);
+      } else {
+        const response = await axios.get("http://127.0.0.1:5050/report", {
+          headers: {
+            Authorization: `Bearer ${userDash.access_token}`,
+          },
+          params: {
+            user_id: userDash.username,
+          },
+        });
+        const report = response.data;
+        setReport(report);
+        setActiveItemDetails(report[activeIndexDetails]);
+        setActiveItemAll(report[activeIndexAll]);
+      }
     };
-    if (user) fetchReport();
-  }, [activeIndexDetails, activeIndexAll, user]);
+    if (user || userDash) fetchReport();
+  }, [activeIndexDetails, activeIndexAll, user, userDash]);
 
   useEffect(() => {
     if (report && report.length > 0) {
@@ -57,12 +95,9 @@ function AdminDashboard({ user }) {
 
   return (
     <div>
-      {!user && (
-        <Routes>
-          <Route path="/" element={<Navigate to="/login" />} />
-        </Routes>
-      )}
-      {report ? (
+      {!userDash ? (
+        <p>Loading...</p>
+      ) : report ? (
         <div>
           <div>
             <p>
@@ -104,7 +139,7 @@ function AdminDashboard({ user }) {
               <p>Loading label...</p>
             )}
           </div>
-          <Logout user={user} />
+          <Logout user={userDash} />
         </div>
       ) : (
         <p>Loading report...</p>

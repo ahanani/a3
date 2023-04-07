@@ -16,6 +16,7 @@ function Landing({ setUserForApp }) {
       });
       setUser(res.data);
       setUserForApp(res.data);
+      localStorage.setItem("user", res.data.username);
     } catch (err) {
       console.log(err);
     }
@@ -25,7 +26,7 @@ function Landing({ setUserForApp }) {
     <div>
       {!user && (
         <form onSubmit={handleSubmit}>
-          <span> Admin Login </span>
+          <span>Login</span>
           <br />
           <input
             type="text"

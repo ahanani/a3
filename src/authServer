@@ -169,6 +169,13 @@ authServer.post(
   })
 );
 
+authServer.get("/user", asyncWrapper(async (req, res) => {
+  const { id } = req.query;
+  const userDoc = await userModel.findOne({username: id});
+  if (userDoc.active) res.json(userDoc);
+  res.json("Not signed in!");
+}))
+
 authServer.get(
   "/logout",
   asyncWrapper(async (req, res) => {

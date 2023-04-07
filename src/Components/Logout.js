@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Route, Routes, Navigate, Red } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 
 function Logout({ user }) {
   const [redirect, setRedirect] = useState(false);
@@ -10,6 +10,7 @@ function Logout({ user }) {
         appid: `Bearer ${user.access_token}`,
       },
     });
+    localStorage.removeItem("user");
     setRedirect(true);
   };
 
