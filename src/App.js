@@ -11,7 +11,7 @@ function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/" element={<Navigate to="./login" />} />
         <Route path="/login" element={<Landing setUserForApp={setUser} />} />
         <Route path="/details/:id" element={<Details user={user} />} />
         <Route
