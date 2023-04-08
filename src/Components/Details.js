@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom";
 function Details({ user }) {
   const { id } = useParams();
   const [pokemon, setPokemon] = useState([]);
+  const [userDash, setUserDash] = useState(null);
 
   const getThreeDigitId = (id) => {
     if (id < 10) return `00${id}`;
@@ -13,25 +14,69 @@ function Details({ user }) {
   };
 
   useEffect(() => {
+    if (!user) {
+      const getUser = async () => {
+        console.log("this happens");
+        try {
+          const res = await axios.get("http://127.0.0.1:5040/user", {
+            params: {
+              id: localStorage.getItem("user"),
+            },
+          });
+          console.log(res.data);
+          setUserDash(res.data);
+        } catch (err) {
+          console.log(err);
+        }
+      };
+      getUser();
+    } else {
+      setUserDash(user);
+    }
+  }, [user]);
+
+  useEffect(() => {
     const fetchPokemon = async () => {
-      const response = await axios.get("http://127.0.0.1:5050/api/v1/pokemon", {
-        headers: {
-          Authorization: `Bearer ${user.access_token}`,
-        },
-        params: {
-          user_id: user.username,
-          id: id,
-        },
-      });
-      const poke = response.data;
-      setPokemon(poke);
+      if (user) {
+        const response = await axios.get(
+          "http://127.0.0.1:5050/api/v1/pokemon",
+          {
+            headers: {
+              Authorization: `Bearer ${user.access_token}`,
+            },
+            params: {
+              user_id: user.username,
+              id: id,
+            },
+          }
+        );
+        const poke = response.data;
+        setPokemon(poke);
+      } else {
+        const response = await axios.get(
+          "http://127.0.0.1:5050/api/v1/pokemon",
+          {
+            headers: {
+              Authorization: `Bearer ${userDash.access_token}`,
+            },
+            params: {
+              user_id: userDash.username,
+              id: id,
+            },
+          }
+        );
+        const poke = response.data;
+        setPokemon(poke);
+      }
     };
-    fetchPokemon();
-  }, []);
+    if (user || userDash) fetchPokemon();
+  }, [user, userDash]);
 
   return (
     <>
-      {pokemon.length > 0 ? (
+      {!userDash ? (
+        <p>Loading...</p>
+      ) : pokemon.length > 0 ? (
         <div>
           <p>ID: {pokemon[0].id}</p>
           <p>Name: {pokemon[0].name.english}</p>

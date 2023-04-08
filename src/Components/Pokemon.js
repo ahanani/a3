@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, Outlet } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function Pokemon({ pokemon }) {
   const getThreeDigitId = (id) => {
@@ -19,7 +19,6 @@ function Pokemon({ pokemon }) {
           )}.png`}
         />
       </Link>
-      <Outlet />
     </>
   );
 }
