@@ -18,7 +18,7 @@ function Details({ user }) {
       const getUser = async () => {
         console.log("this happens");
         try {
-          const res = await axios.get("http://127.0.0.1:5040/user", {
+          const res = await axios.get("https://a3-mfym.onrender.com/user", {
             params: {
               id: localStorage.getItem("user"),
             },
@@ -39,7 +39,7 @@ function Details({ user }) {
     const fetchPokemon = async () => {
       if (user) {
         const response = await axios.get(
-          "http://127.0.0.1:5050/api/v1/pokemon",
+          "https://a3-app-server.onrender.com/api/v1/pokemon",
           {
             headers: {
               Authorization: `Bearer ${user.access_token}`,
@@ -54,7 +54,7 @@ function Details({ user }) {
         setPokemon(poke);
       } else {
         const response = await axios.get(
-          "http://127.0.0.1:5050/api/v1/pokemon",
+          "https://a3-app-server.onrender.com/api/v1/pokemon",
           {
             headers: {
               Authorization: `Bearer ${userDash.access_token}`,

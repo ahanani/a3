@@ -5,7 +5,7 @@ import { Route, Routes, Navigate } from "react-router-dom";
 function Logout({ user }) {
   const [redirect, setRedirect] = useState(false);
   const handleClick = async () => {
-    await axios.get("http://127.0.0.1:5040/logout", {
+    await axios.get("https://a3-mfym.onrender.com/logout", {
       params: {
         appid: `Bearer ${user.access_token}`,
       },
