@@ -10,7 +10,7 @@ function Landing({ setUserForApp }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://127.0.0.1:5040/login", {
+      const res = await axios.post("https://a3-mfym.onrender.com/login", {
         username: username,
         password: password,
       });
